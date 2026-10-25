@@ -1,0 +1,6 @@
+streamlit
+opencv-python-headless
+moviepy==1.0.3
+openai-whisper
+yt-dlp
+mediapipe
