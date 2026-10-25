@@ -20,7 +20,13 @@ st.markdown("---")
 # FUNGSI MESIN INTI (Sama seperti sebelumnya)
 # ==========================================
 def unduh_youtube(url_youtube, nama_file="youtube_mentah.mp4"):
-    opsi = {'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best', 'outtmpl': nama_file, 'quiet': True}
+    opsi = {
+    'format': 'best',
+    'outtmpl': nama_file,
+    'quiet': True,
+    'nocheckcertificate': True,
+    'http_headers': {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'}
+}
     with yt_dlp.YoutubeDL(opsi) as ydl:
         ydl.download([url_youtube])
     return nama_file
