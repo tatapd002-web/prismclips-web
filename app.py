@@ -5,7 +5,8 @@ import subprocess
 import whisper
 import yt_dlp
 import mediapipe as mp
-from moviepy.editor import VideoFileClip
+from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
+import moviepy.audio.fx.all as afx
 
 # ==========================================
 # KONFIGURASI TAMPILAN WEB
@@ -20,15 +21,7 @@ st.markdown("---")
 # FUNGSI MESIN INTI (Sama seperti sebelumnya)
 # ==========================================
 def unduh_youtube(url_youtube, nama_file="youtube_mentah.mp4"):
-    opsi = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'merge_output_format': 'mp4',
-        'outtmpl': nama_file,
-        'quiet': True,
-        'nocheckcertificate': True,
-        # Taktik Bypass: Menyamar sebagai aplikasi YouTube Android
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
-    }
+    opsi = {'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best', 'outtmpl': nama_file, 'quiet': True}
     with yt_dlp.YoutubeDL(opsi) as ydl:
         ydl.download([url_youtube])
     return nama_file
@@ -47,6 +40,25 @@ def potong_dinamis(file_masukan, file_keluaran, waktu_mulai, waktu_selesai):
         return None
 
     video = VideoFileClip(file_masukan).subclip(waktu_mulai, waktu_selesai)
+    
+    # ==========================================
+    # BLOK MANIPULASI SIDIK JARI AUDIO (AUTO-BGM)
+    # ==========================================
+    if os.path.exists("lofi_bgm.mp3"):
+        audio_asli = video.audio
+        musik_latar = AudioFileClip("lofi_bgm.mp3")
+        
+        # 1. Ulangi (Loop) lagu agar durasinya menyamai klip
+        musik_latar = afx.audio_loop(musik_latar, duration=video.duration)
+        
+        # 2. Turunkan volume musik menjadi 3% agar narasumber tetap jelas
+        musik_latar = musik_latar.volumex(0.03)
+        
+        # 3. Timpa dan gabungkan kedua gelombang suara
+        audio_final = CompositeAudioClip([audio_asli, musik_latar])
+        video = video.set_audio(audio_final)
+    # ==========================================
+
     lebar_asli, tinggi_asli = video.w, video.h
     lebar_baru = int(tinggi_asli * 9 / 16)
     
